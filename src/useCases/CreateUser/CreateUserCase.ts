@@ -1,10 +1,12 @@
 import { User } from "../../entities/User";
+import { IMailProvider } from "../../providers/IMailProvider";
 import { IUsersRepository } from "../../repositories/IUsersRepository";
 import { ICreateUserRequestDTO } from "./CreateUserDTO";
 
 export class CreateUserCase {
   constructor(
-    private usersRepository: IUsersRepository
+    private usersRepository: IUsersRepository,
+    private mailProvider: IMailProvider,
   ) {}
 
   async execute(data: ICreateUserRequestDTO) {
@@ -17,5 +19,18 @@ export class CreateUserCase {
     const user = new User(data);
 
     await this.usersRepository.save(user);
+
+    this.mailProvider.sendMail({
+      to: {
+        name: data.name,
+        email: data.email,
+      },
+      from: {
+        name: 'Suporte',
+        email: 'email@suporte.com.br',
+      },
+      subject: 'Bem-vindo!',
+      body: '<p>Você já pode fazer login em nossa plataforma.</p>',
+    });
   }
 }
